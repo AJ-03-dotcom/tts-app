@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Text-to-Speech</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            color: #333;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        input[type="file"], textarea {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: 300px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        audio {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI Text-to-Speech</h1>
+    <div class="container">
+        <textarea id="textInput" rows="5" placeholder="Enter text to speak..."></textarea>
+        <input type="file" id="pdfFile" accept=".pdf" />
+        <button onclick="uploadPDF()">Convert PDF to Speech</button>
+        <button onclick="generateSpeech()">Convert Text to Speech</button>
+        <audio id="audioPlayer" controls></audio>
+    </div>
+
+    <script>
+        async function generateSpeech() {
+            const text = document.getElementById("textInput").value;
+            if (!text) {
+                alert("Please enter some text.");
+                return;
+            }
+            
+            const response = await fetch("/speak/?text=" + encodeURIComponent(text));
+            if (response.ok) {
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audioPlayer = document.getElementById("audioPlayer");
+                audioPlayer.src = audioUrl;
+                audioPlayer.play();
+            } else {
+                alert("Failed to generate speech.");
+            }
+        }
+
+        async function uploadPDF() {
+            const fileInput = document.getElementById("pdfFile");
+            const file = fileInput.files[0];
+            if (!file) {
+                alert("Please upload a PDF file.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const response = await fetch("/upload-pdf/", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (response.ok) {
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audioPlayer = document.getElementById("audioPlayer");
+                audioPlayer.src = audioUrl;
+                audioPlayer.play();
+            } else {
+                alert("Failed to upload PDF.");
+            }
+        }
+    </script>
+</body>
+</html>
