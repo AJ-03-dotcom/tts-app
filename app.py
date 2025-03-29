@@ -31,7 +31,7 @@ async def upload_pdf(file: UploadFile = File(...)):
     
     return generate_speech(text)
 
-# Ensure the app runs on the correct port
+# Ensure FastAPI listens to the correct port
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))  # Default to 8000 if PORT is not set
