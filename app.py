@@ -1,7 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from gtts import gTTS
 from io import BytesIO
 from fastapi.responses import StreamingResponse
+import PyPDF2
 
 app = FastAPI()
 
@@ -16,3 +17,15 @@ def generate_speech(text: str):
     tts.write_to_fp(audio_buffer)
     audio_buffer.seek(0)
     return StreamingResponse(audio_buffer, media_type="audio/mpeg")
+
+@app.post("/upload-pdf/")
+async def upload_pdf(file: UploadFile = File(...)):
+    pdf_reader = PyPDF2.PdfReader(file.file)
+    text = ""
+    for page in pdf_reader.pages:
+        text += page.extract_text() + " "
+    
+    if not text.strip():
+        return {"error": "Could not extract text from PDF."}
+    
+    return generate_speech(text)
