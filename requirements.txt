@@ -1,4 +1,5 @@
-fastapi
-uvicorn
-gtts
-PyPDF2
+fastapi==<version>
+uvicorn==<version>
+gtts==<version>
+PyPDF2==<version>
+python-multipart==<version>
