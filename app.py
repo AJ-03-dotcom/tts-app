@@ -1,23 +1,41 @@
 from fastapi import FastAPI, UploadFile, File
-from gtts import gTTS
+import requests
 from io import BytesIO
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, HTMLResponse
 import PyPDF2
 import os
 
 app = FastAPI()
 
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to the AI Text-to-Speech API!"}
+# Serve static files (including HTML)
+@app.get("/", response_class=HTMLResponse)
+async def serve_ui():
+    with open("static/index.html") as f:
+        return HTMLResponse(content=f.read(), status_code=200)
+
+# Eleven Labs API setup
+API_KEY = "YOUR_ELEVEN_LABS_API_KEY"
+URL = "https://api.elevenlabs.io/synthesize"
 
 @app.get("/speak/")
-def generate_speech(text: str):
-    tts = gTTS(text, lang="en", slow=False)
-    audio_buffer = BytesIO()
-    tts.write_to_fp(audio_buffer)
-    audio_buffer.seek(0)
-    return StreamingResponse(audio_buffer, media_type="audio/mpeg")
+def generate_speech_elevenlabs(text: str):
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+    }
+    data = {
+        "text": text,
+        "voice": "en_us_male",  # You can choose different voices (male/female)
+    }
+    
+    response = requests.post(URL, json=data, headers=headers)
+    
+    if response.status_code == 200:
+        audio_content = response.content
+        audio_buffer = BytesIO(audio_content)
+        audio_buffer.seek(0)
+        return StreamingResponse(audio_buffer, media_type="audio/mpeg")
+    else:
+        return {"error": "Could not generate speech."}
 
 @app.post("/upload-pdf/")
 async def upload_pdf(file: UploadFile = File(...)):
@@ -29,7 +47,7 @@ async def upload_pdf(file: UploadFile = File(...)):
     if not text.strip():
         return {"error": "Could not extract text from PDF."}
     
-    return generate_speech(text)
+    return generate_speech_elevenlabs(text)
 
 # Ensure the app runs on the correct port
 if __name__ == "__main__":
