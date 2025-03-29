@@ -1,8 +1,9 @@
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from gtts import gTTS
 from io import BytesIO
 from fastapi.responses import StreamingResponse
+import PyPDF2
 
 app = FastAPI()
 
