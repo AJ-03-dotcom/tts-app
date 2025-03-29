@@ -3,6 +3,7 @@ from gtts import gTTS
 from io import BytesIO
 from fastapi.responses import StreamingResponse
 import PyPDF2
+import os
 
 app = FastAPI()
 
