@@ -1,4 +1,3 @@
-import os
 from fastapi import FastAPI, UploadFile, File
 from gtts import gTTS
 from io import BytesIO
@@ -30,9 +29,3 @@ async def upload_pdf(file: UploadFile = File(...)):
         return {"error": "Could not extract text from PDF."}
     
     return generate_speech(text)
-
-# Ensure the app listens on the correct port provided by the environment
-if __name__ == "__main__":
-    import uvicorn
-    port = int(os.environ.get("PORT", 8000))  # Use the PORT environment variable
-    uvicorn.run(app, host="0.0.0.0", port=port)
